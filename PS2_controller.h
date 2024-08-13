@@ -22,10 +22,41 @@ void setupPS2controller()
   {
     err = ps2x.config_gamepad(PS2_CLK, PS2_CMD, PS2_SEL, PS2_DAT, true, true);
   }
+
+  SemaphoreHandle_t mutex = xSemaphoreCreateMutex();
+  assert(mutex);
+
+  bool needSpool = false;
+  bool hasSpooled = false;
 }
 
 bool PS2control()
 {
+  //TODO: test neu bam l2 2 lan thi co crash ko
+  if (ps2x.Button(PSB_L2)) {
+    xTaskCreatePinnedToCore(
+                    waitBanBong,   /* Task function. */
+                    "waitBanBong",     /* name of task. */
+                    8192,       /* Stack size of task */
+                    NULL,        /* parameter of the task */
+                    1,           /* priority of the task */
+                    &Task2,      /* Task handle to keep track of created task */
+                    1);          /* pin task to core 1 */
+    xSemaphoreTake(mutex, 1);
+    needSpool = true;
+    xSemaphoreGive(mutex);
+    if (ps2x.Button(PSB_L1)) {
+      xSemaphoreTake(mutex, 1);
+      bool prv_hasSpooled = hasSpooled;
+      xSemaphoreGive(mutex);
+      if (prv_hasSpooled) {
+        pwm.setPWM(SERVO, 0, 400);
+        delay(500);
+        pwm.setPWM(SERVO, 0, 210);
+      }
+    }
+  }
+
   int nJoyX = 128 - ps2x.Analog(PSS_RY); // read x-joystick
   int nJoyY = 128 - ps2x.Analog(PSS_LX); // read y-joystick
   int nMotMixL;                          // Motor (left) mixed output
@@ -90,3 +121,21 @@ bool PS2control()
   return 1;
 }
 
+void waitBanBong() {
+  xSemaphoreTake(mutex, 1);
+  bool prv_needSpool = needSpool;
+  bool prv_hasSpooled = hasSpooled;
+  xSemaphoreGive(mutex);
+  if (prv_needSpool) {
+    if (!prv_hasSpooled) {
+      // bat motor chay da
+      delay(500);
+      xSemaphoreTake(mutex, 1);
+      hasSpooled = true;
+      xSemaphoreGive(mutex);
+    }
+  } else {
+    //tat motor chay da
+    //tu huy task
+  }
+}
