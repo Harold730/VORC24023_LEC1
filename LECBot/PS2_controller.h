@@ -8,6 +8,7 @@ PS2X ps2x; // create PS2 Controller Class object
 #define PS2_CLK 14 // SLK   18
 
 #define SERVO 3
+#define SERVO_GOC_BAN 3
 #define SERVO_LOC_BONG 5
 
 #define TOP_SPEED 4090
@@ -57,6 +58,12 @@ bool PS2control()
       }
     }
   }
+  if(ps2x.ButtonPressed(PSB_GREEN)){
+    turnServo90(SERVO_GOC_BAN);
+  } else if (ps2x.ButtonPressed(PSB_RED)) {
+    turnServoM90(SERVO_GOC_BAN);
+  }
+  if (ps2x.ButtonPressed(PSB_PAD_RIGHT)) {
     // Black ball
     // Position servo1 at -90 degrees
     turnServoM90(SERVO_LOC_BONG);
