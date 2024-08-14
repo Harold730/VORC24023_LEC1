@@ -8,6 +8,7 @@ PS2X ps2x; // create PS2 Controller Class object
 #define PS2_CLK 14 // SLK   18
 
 #define SERVO 3
+#define SERVO_LOC_BONG 5
 
 #define TOP_SPEED 4090
 #define NORM_SPEED 2048
@@ -54,6 +55,25 @@ bool PS2control()
         delay(500);
         pwm.setPWM(SERVO, 0, 210);
       }
+    }
+  }
+    // Black ball
+    // Position servo1 at -90 degrees
+    turnServoM90(SERVO_LOC_BONG);
+  } else if (ps2x.ButtonPressed(PSB_PAD_LEFT)) {
+    // White ball
+    // Position servo1 at 90 degrees
+    turnServo90(SERVO_LOC_BONG);
+  } else if (ps2x.ButtonPressed(PSB_PAD_UP)){
+    int irvalue = digitalRead(irvalue);
+    if (irvalue == 0) {
+      // Black ball
+      // Position servo1 at -90 degrees
+      turnServoM90(SERVO_LOC_BONG);
+    } else if (irvalue== 1){ 
+      // White ball
+      // Position servo1 at 90 degrees
+      turnServo90(SERVO_LOC_BONG);
     }
   }
 
