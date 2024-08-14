@@ -17,6 +17,14 @@ PS2X ps2x; // create PS2 Controller Class object
 
 int speed = NORM_SPEED;
 
+TaskHandle_t banBongTask;
+
+bool needSpool = false;
+bool hasSpooled = false;
+SemaphoreHandle_t mutex;
+
+void waitBanBong(void * parameter);
+
 void setupPS2controller()
 {
   int err = -1;
@@ -25,11 +33,8 @@ void setupPS2controller()
     err = ps2x.config_gamepad(PS2_CLK, PS2_CMD, PS2_SEL, PS2_DAT, true, true);
   }
 
-  SemaphoreHandle_t mutex = xSemaphoreCreateMutex();
+  mutex = xSemaphoreCreateMutex();
   assert(mutex);
-
-  bool needSpool = false;
-  bool hasSpooled = false;
 }
 
 bool PS2control()
@@ -42,7 +47,7 @@ bool PS2control()
                     8192,       /* Stack size of task */
                     NULL,        /* parameter of the task */
                     1,           /* priority of the task */
-                    &Task2,      /* Task handle to keep track of created task */
+                    &banBongTask,      /* Task handle to keep track of created task */
                     1);          /* pin task to core 1 */
     xSemaphoreTake(mutex, 1);
     needSpool = true;
@@ -129,26 +134,10 @@ bool PS2control()
     c2 = map(c2, 0, 128, 0, speed);
   }
   setPWMMotors(c1, c2, c3, c4);
-  } else {
-    if (ps2x.Button(PSB_L2)) {
-      Serial.println("ban bong");
-      pwm.setPWM(14, 0, TOP_SPEED);
-      delay(500);
-      while (ps2x.Button(PSB_L2)) {
-        pwm.setPWM(SERVO, 0, 400);
-        delay(500);
-        pwm.setPWM(SERVO, 0, 210);
-        ps2x.read_gamepad(0, 0);
-        delay(250);
-      }
-      pwm.setPWM(14, 0, 0);
-      pwm.setPWM(SERVO, 0, 400); 
-    }
-  }
   return 1;
 }
 
-void waitBanBong() {
+void waitBanBong(void * parameter) {
   xSemaphoreTake(mutex, 1);
   bool prv_needSpool = needSpool;
   bool prv_hasSpooled = hasSpooled;
@@ -163,6 +152,6 @@ void waitBanBong() {
     }
   } else {
     //tat motor chay da
-    //tu huy task
+    vTaskDelete(banBongTask);//tu huy task
   }
 }
