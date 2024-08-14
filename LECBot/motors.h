@@ -36,3 +36,11 @@ void initMotors()
 
   setPWMMotors(0, 0, 0, 0);
 }
+
+void turnServo90(int servo) {
+  pwm.setPWM(servo, 0, 409);
+}
+
+void turnServoM90(int servo) {
+  pwm.setPWM(servo, 0, 205);
+}
