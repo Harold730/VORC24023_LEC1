@@ -7,8 +7,8 @@ PS2X ps2x; // create PS2 Controller Class object
 #define PS2_SEL 15 // SS     5
 #define PS2_CLK 14 // SLK   18
 
-#define SERVO 3
 #define SERVO_GOC_BAN 3
+#define SERVO_BAN_BONG 4
 #define SERVO_LOC_BONG 5
 
 #define TOP_SPEED 4090
@@ -52,9 +52,9 @@ bool PS2control()
       bool prv_hasSpooled = hasSpooled;
       xSemaphoreGive(mutex);
       if (prv_hasSpooled) {
-        pwm.setPWM(SERVO, 0, 400);
+        pwm.setPWM(SERVO_BAN_BONG, 0, 400);
         delay(500);
-        pwm.setPWM(SERVO, 0, 210);
+        pwm.setPWM(SERVO_BAN_BONG, 0, 210);
       }
     }
   }
